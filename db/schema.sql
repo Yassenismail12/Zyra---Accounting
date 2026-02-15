@@ -26,18 +26,28 @@ CREATE TABLE products (
     current_stock INTEGER DEFAULT 0 check (current_stock >= 0)
 );
 --invoice table
-CREATE type invoice_type as ENUM ('SALE', 'PURCHASE');
+CREATE type invoice_type as ENUM ('SALE', 'PURCHASE', 'INTERNAL');
 CREATE type invoice_status as ENUM ('PAID', 'UNPAID');
 CREATE TABLE invoices (
     id SERIAL PRIMARY KEY,
-    type VARCHAR(20) CHECK (type IN ('SALE', 'PURCHASE')),
+    type invoice_type NOT NULL,
     invoice_date TIMESTAMP DEFAULT NOW(),
-    status VARCHAR(30) NOT NULL,
+    status invoice_status NOT NULL,
     notes TEXT,
-    party_id INTEGER NOT NULL,
+    party_id INTEGER,
     created_by INTEGER NOT NULL,
     CONSTRAINT fk_invoice_party FOREIGN KEY (party_id) REFERENCES parties(id),
-    CONSTRAINT fk_invoice_user FOREIGN KEY (created_by) REFERENCES users(id)
+    CONSTRAINT fk_invoice_user FOREIGN KEY (created_by) REFERENCES users(id),
+    CONSTRAINT check_party_logic check (
+        (
+            type = 'INTERNAL'
+            and party_id is null
+        )
+        or (
+            type != 'INTERNAL'
+            and party_id is not null
+        )
+    )
 );
 --invoice items table
 CREATE TABLE invoice_items (
