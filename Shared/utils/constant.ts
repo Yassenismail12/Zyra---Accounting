@@ -19,3 +19,20 @@ export const AuthErrors={
 export const UserSuccess={
     CREATE_USER_SUCCESS:'Create User Successful'
 }
+
+export const PartiesError={
+    PARTIES_ALREADY_EXSITS: "Name of Party already exsits",
+}
+
+export const PartiesSuccess={
+    CREATE_PARTIES_SUCCESS:'Create Party Successful'
+}
+
+export const ProductsError={
+    PRODUCTS_ALREADY_EXSITS: "Name of Product already exsits",
+    PRODUCT_NOT_FOUND: "Product not found",
+}
+
+export const ProductsSuccess={
+    CREATE_PRODUCTS_SUCCESS:'Create Product Successful'
+}
