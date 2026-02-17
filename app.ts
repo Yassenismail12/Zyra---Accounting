@@ -1,19 +1,30 @@
-import express ,{ Response , Request } from 'express';
+import express from 'express';
 
 import dotenv from 'dotenv';
 dotenv.config();
 
 import { errorHandler } from './Shared/middlewares/errorHandler.middleware';
+import AuthRouter from './Modules/Auth/auth.route';
+import UserRouter from './Modules/Users/user.route';
 
 const app = express();
 
 const port = process.env.PORT;
 
-app.use(errorHandler)
+//init Router
+const authRouter= new AuthRouter()
+const userRouter= new UserRouter()
 
-app.get('/', (req:Request, res:Response) => {
-    res.send('Accounting System app is running!');
-});
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Endpoints
+app.use(authRouter.router)
+app.use(userRouter.router)
+
+//Error handler
+app.use(errorHandler)
 
 app.listen(port, () => {
     console.log(`Accounting System app is running on port ${port}`);
