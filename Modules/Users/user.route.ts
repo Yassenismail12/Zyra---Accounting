@@ -6,16 +6,16 @@ import expressAsyncHandler from "express-async-handler";
 import { auth, authRoles } from "../../Shared/middlewares/auth.middleware";
 import { UserRoles } from "../../Shared/enums/userRoles.enum";
 
-class UserRouter{
-    router=Router()
+class UserRouter {
+    router = Router()
     private userController: UserController
 
-    constructor(){
-        this.userController= new UserController()
+    constructor() {
+        this.userController = new UserController()
         this.initRouter()
     }
 
-    private initRouter=()=>{
+    private initRouter = () => {
 
         this.router.post('/users',
             validate(addUserSchema),

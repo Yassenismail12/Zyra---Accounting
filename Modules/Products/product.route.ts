@@ -1,23 +1,23 @@
 import { Router } from "express"
 import { ProductController } from "./product.controller"
 import { validate } from "../../Shared/middlewares/validation.middleware"
-import { createProductSchema } from "./dto/createProduct.dto"
+import { addProductSchema } from "./dto/addProduct.dto"
 import expressAsyncHandler from "express-async-handler";
 
 
-class ProductRouter{
-    route=Router()
+class ProductRouter {
+    route = Router()
     private productController: ProductController
 
-    constructor(){
-        this.productController=new ProductController()
+    constructor() {
+        this.productController = new ProductController()
         this.initRouter()
     }
 
-    private initRouter(){
+    private initRouter() {
 
         this.route.post('/products',
-            validate(createProductSchema),
+            validate(addProductSchema),
             expressAsyncHandler(this.productController.createProduct)
         )
 

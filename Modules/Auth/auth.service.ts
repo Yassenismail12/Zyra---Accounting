@@ -5,10 +5,10 @@ import { UserError } from "../../Shared/utils/constant";
 import { loginDTO } from "./dto/login.dto";
 import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken";
-export class AuthService{
+export class AuthService {
 
-    public async login(dto:loginDTO){
-        const {email , password} =dto
+    public async login(dto: loginDTO) {
+        const { email, password } = dto
 
         const result = await pool.query(
             `SELECT * FROM users WHERE email = $1`,
@@ -17,22 +17,23 @@ export class AuthService{
 
         const user = result.rows[0];
 
-        if(!user)
-            throw new AppError(UserError.USER_NOT_FOUND,StatusCode.CONFLICT)
+        if (!user)
+            throw new AppError(UserError.USER_NOT_FOUND, StatusCode.UNAUTHORIZED)
 
-        const ckeckPassword = await bcrypt.compare(password,user.password)
+        const ckeckPassword = await bcrypt.compare(password, user.password)
 
         if (!ckeckPassword)
-            throw new AppError(UserError.PASSWORD_DO_NOT_MATCH,StatusCode.CONFLICT)
+            throw new AppError(UserError.PASSWORD_DO_NOT_MATCH, StatusCode.UNAUTHORIZED)
 
-        const payload= { id : user.id , role:user.role }
+        const payload = { id: user.id, role: user.role }
 
-        const token= await jwt.sign(
+        const token = jwt.sign(
             payload,
             process.env.JWT_SECRET!,
-            { expiresIn : process.env.JWT_expiresIn  as jwt.SignOptions["expiresIn"]
-        })
+            {
+                expiresIn: process.env.JWT_expiresIn as jwt.SignOptions["expiresIn"]
+            })
 
-        return {token,user}
+        return { token, user }
     }
 }
