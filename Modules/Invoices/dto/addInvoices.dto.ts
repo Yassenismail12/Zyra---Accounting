@@ -5,13 +5,16 @@ export const addInvoiceSchema = z.object({
     body: z.object({
         type: z.enum([Typeinvoice.SALE, Typeinvoice.PURCHASE, Typeinvoice.INTERNAL]),
         invoice_date: z.coerce.date(),
-        status: z.enum([invoice_status.PAID, invoice_status.UNPAID]),
-        notes: z.string(),
-        party_id: z.number(),
+        status: z.enum([invoice_status.PAID, invoice_status.UNPAID]).nullable(),
+        notes: z.string().nullable(),
+        party_id: z.number().nullable(),
         created_by: z.number(),
-        subtotal: z.number(),
-        tax: z.number(),
-        total: z.number()
+        items: z.array(
+            z.object({
+                product_id: z.number(),
+                qty: z.number().positive(),
+            })
+        ).min(1)
     })
 })
 

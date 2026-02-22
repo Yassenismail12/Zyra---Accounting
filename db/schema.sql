@@ -60,9 +60,7 @@ CREATE TABLE invoice_items (
     invoice_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     qty INTEGER NOT NULL CHECK (qty > 0),
-    price NUMERIC(10, 2) NOT NULL,
-    line_total NUMERIC(12, 2) NOT NULL DEFAULT 0,
-    CONSTRAINT check_line_total CHECK (line_total = qty * price),
+    line_total NUMERIC(10, 2) NOT NULL DEFAULT 0,
     CONSTRAINT fk_item_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
     CONSTRAINT fk_item_product FOREIGN KEY (product_id) REFERENCES products(id)
 );
@@ -74,53 +72,23 @@ CREATE TABLE payments (
     payment_date TIMESTAMP DEFAULT NOW(),
     CONSTRAINT fk_payment_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 );
---trigger function to update product stock
-CREATE OR REPLACE FUNCTION update_stock_from_items() RETURNS TRIGGER AS $$
-DECLARE invoice_type VARCHAR;
-BEGIN IF (
-    TG_OP = 'DELETE'
-    OR TG_OP = 'UPDATE'
-) THEN
-SELECT type INTO invoice_type
-FROM invoices
-WHERE id = OLD.invoice_id;
-IF invoice_type = 'SALE' THEN
-UPDATE products
-SET current_stock = current_stock + OLD.qty
-WHERE id = OLD.product_id;
-ELSIF invoice_type = 'PURCHASE' THEN
-UPDATE products
-SET current_stock = current_stock - OLD.qty
-WHERE id = OLD.product_id;
-END IF;
-END IF;
-IF (
-    TG_OP = 'INSERT'
-    OR TG_OP = 'UPDATE'
-) THEN
-SELECT type INTO invoice_type
+CREATE OR REPLACE FUNCTION manage_stock() RETURNS TRIGGER AS $$
+DECLARE invoice_type_value invoice_type;
+stock_change INTEGER;
+BEGIN
+SELECT type INTO invoice_type_value
 FROM invoices
 WHERE id = NEW.invoice_id;
-IF invoice_type = 'SALE' THEN
-UPDATE products
-SET current_stock = current_stock - NEW.qty
-WHERE id = NEW.product_id;
-ELSIF invoice_type = 'PURCHASE' THEN
-UPDATE products
-SET current_stock = current_stock + NEW.qty
-WHERE id = NEW.product_id;
+IF invoice_type_value = 'PURCHASE' THEN stock_change := 1;
+ELSIF invoice_type_value IN ('SALE', 'INTERNAL') THEN stock_change := -1;
+ELSE RETURN NEW;
 END IF;
+UPDATE products
+SET current_stock = current_stock + (stock_change * NEW.qty)
+WHERE id = NEW.product_id;
 RETURN NEW;
-END IF;
-IF TG_OP = 'DELETE' THEN RETURN OLD;
-END IF;
-RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
---trigger
-CREATE TRIGGER trg_update_stock
+CREATE TRIGGER trg_manage_stock
 AFTER
-INSERT
-    OR
-UPDATE
-    OR DELETE ON invoice_items FOR EACH ROW EXECUTE FUNCTION update_stock_from_items();
+INSERT ON invoice_items FOR EACH ROW EXECUTE FUNCTION manage_stock();
