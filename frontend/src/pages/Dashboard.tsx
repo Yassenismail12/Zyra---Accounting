@@ -1,137 +1,130 @@
+import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { fetchInvoices } from '../api/invoices'
+import { fetchProducts } from '../api/products'
+import { getApiErrorMessage } from '../api/errors'
+import { useI18n } from '../i18n'
 import { StatCard } from '../components/StatCard'
-import { formatDate, formatMoney } from '../utils/format'
-
-type GenericInvoice = Record<string, unknown>
-
-interface DashboardStats {
-  totalInvoices: string
-  totalSales: string
-  unpaidInvoices: string
-  latestInvoiceDate: string
-}
-
-function parseInvoices(data: unknown): GenericInvoice[] {
-  if (Array.isArray(data)) {
-    return data.filter((item): item is GenericInvoice => typeof item === 'object' && item !== null)
-  }
-
-  if (data && typeof data === 'object') {
-    const candidates = ['invoices', 'data', 'items', 'results']
-    for (const key of candidates) {
-      const maybeArray = (data as Record<string, unknown>)[key]
-      if (Array.isArray(maybeArray)) {
-        return maybeArray.filter(
-          (item): item is GenericInvoice => typeof item === 'object' && item !== null,
-        )
-      }
-    }
-  }
-
-  return []
-}
-
-function deriveStats(invoices: GenericInvoice[]): DashboardStats {
-  const count = invoices.length
-
-  let totalSales = 0
-  let salesFound = false
-  let unpaidCount = 0
-  let unpaidFound = false
-  let latestDate: Date | null = null
-  let latestDateFound = false
-
-  for (const invoice of invoices) {
-    const total =
-      typeof invoice.total === 'number'
-        ? invoice.total
-        : typeof invoice.amount === 'number'
-          ? invoice.amount
-          : typeof invoice.grandTotal === 'number'
-            ? invoice.grandTotal
-            : null
-
-    if (total !== null) {
-      salesFound = true
-      totalSales += total
-    }
-
-    const statusValue =
-      typeof invoice.status === 'string'
-        ? invoice.status
-        : typeof invoice.paymentStatus === 'string'
-          ? invoice.paymentStatus
-          : null
-
-    if (statusValue !== null) {
-      unpaidFound = true
-      if (statusValue.toLowerCase().includes('unpaid') || statusValue.toLowerCase() === 'pending') {
-        unpaidCount += 1
-      }
-    }
-
-    const dateValue =
-      typeof invoice.date === 'string'
-        ? invoice.date
-        : typeof invoice.createdAt === 'string'
-          ? invoice.createdAt
-          : typeof invoice.invoiceDate === 'string'
-            ? invoice.invoiceDate
-            : null
-
-    if (dateValue) {
-      const parsed = new Date(dateValue)
-      if (!Number.isNaN(parsed.getTime())) {
-        latestDateFound = true
-        if (!latestDate || parsed > latestDate) {
-          latestDate = parsed
-        }
-      }
-    }
-  }
-
-  return {
-    totalInvoices: String(count),
-    totalSales: salesFound ? formatMoney(totalSales) : 'N/A',
-    unpaidInvoices: unpaidFound ? String(unpaidCount) : 'N/A',
-    latestInvoiceDate: latestDateFound && latestDate ? formatDate(latestDate) : 'N/A',
-  }
-}
 
 export function DashboardPage() {
-  const { data, error, isLoading } = useQuery({
+  const { t, locale } = useI18n()
+  const { data: invoices = [], error: invoicesError } = useQuery({
     queryKey: ['invoices'],
     queryFn: fetchInvoices,
   })
+  const { data: products = [], error: productsError } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  })
 
-  const invoices = useMemo(() => parseInvoices(data), [data])
-  const stats = useMemo(() => deriveStats(invoices), [invoices])
+  const metrics = useMemo(() => {
+    const now = new Date()
+    const cycleEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + (now.getDate() > 25 ? 1 : 0),
+      25,
+      23,
+      59,
+      59,
+      999,
+    )
+    const cycleStart = new Date(
+      cycleEnd.getFullYear(),
+      cycleEnd.getMonth() - 1,
+      26,
+      0,
+      0,
+      0,
+      0,
+    )
 
-  let errorText: string | null = null
-  if (error) {
-    if (axios.isAxiosError(error)) {
-      errorText = error.response?.data?.message || 'Failed to load invoices.'
-    } else {
-      errorText = 'Failed to load invoices.'
+    const monthlyInvoices = invoices.filter((invoice) => {
+      const date = new Date(invoice.invoice_date)
+      if (Number.isNaN(date.getTime())) {
+        return false
+      }
+      return date >= cycleStart && date <= cycleEnd
+    })
+
+    const unpaidInvoices = invoices.filter(
+      (invoice) => (invoice.status || '').toUpperCase() === 'UNPAID',
+    )
+    const unpaidSold = unpaidInvoices.filter(
+      (invoice) => (invoice.type || '').toUpperCase() === 'SALE',
+    ).length
+    const unpaidPurchased = unpaidInvoices.filter(
+      (invoice) => (invoice.type || '').toUpperCase() === 'PURCHASE',
+    ).length
+
+    const periodLabel = `${cycleStart.toLocaleDateString(locale, {
+      month: 'short',
+      day: 'numeric',
+    })} - ${cycleEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric' })}`
+
+    return {
+      monthlyInvoicesTotal: monthlyInvoices.length,
+      unpaidSold,
+      unpaidPurchased,
+      stockItems: products.length,
+      periodLabel,
     }
-  }
+  }, [invoices, locale, products])
+
+  const quickActions = useMemo(
+    () => [
+      {
+        to: '/invoices',
+        title: t('pages.dashboard.quick.invoices.title'),
+        subtitle: t('pages.dashboard.quick.invoices.subtitle'),
+      },
+      {
+        to: '/inventory',
+        title: t('pages.dashboard.quick.inventory.title'),
+        subtitle: t('pages.dashboard.quick.inventory.subtitle'),
+      },
+      {
+        to: '/parties',
+        title: t('pages.dashboard.quick.parties.title'),
+        subtitle: t('pages.dashboard.quick.parties.subtitle'),
+      },
+    ],
+    [t],
+  )
+
+  const loadError = invoicesError
+    ? getApiErrorMessage(invoicesError, t('pages.dashboard.error.invoices'))
+    : productsError
+      ? getApiErrorMessage(productsError, t('pages.dashboard.error.products'))
+      : null
 
   return (
-    <section>
-      <div className="cards-grid">
-        <StatCard label="Total invoices" value={isLoading ? 'Loading...' : stats.totalInvoices} />
-        <StatCard label="Total sales" value={isLoading ? 'Loading...' : stats.totalSales} />
-        <StatCard label="Unpaid invoices" value={isLoading ? 'Loading...' : stats.unpaidInvoices} />
-        <StatCard
-          label="Latest invoice date"
-          value={isLoading ? 'Loading...' : stats.latestInvoiceDate}
-        />
+    <section className="dashboard-page">
+      <div className="dashboard-hero">
+        <p className="section-kicker">{t('pages.dashboard.kicker')}</p>
+        <h2 className="section-title">{t('pages.dashboard.title')}</h2>
+        <p className="section-subtitle">{t('pages.dashboard.subtitle')}</p>
       </div>
 
-      {errorText && <p className="dashboard-error">{errorText}</p>}
+      {loadError ? <p className="table-error">{loadError}</p> : null}
+
+      <div className="dashboard-stats-grid">
+        <StatCard
+          label={t('pages.dashboard.stat.monthly', { period: metrics.periodLabel })}
+          value={String(metrics.monthlyInvoicesTotal)}
+        />
+        <StatCard label={t('pages.dashboard.stat.unpaid')} value={`${metrics.unpaidSold} / ${metrics.unpaidPurchased}`} />
+        <StatCard label={t('pages.dashboard.stat.stockItems')} value={String(metrics.stockItems)} />
+      </div>
+
+      <div className="dashboard-nav-grid">
+        {quickActions.map((action) => (
+          <Link key={action.to} to={action.to} className="dashboard-nav-card">
+            <p className="dashboard-nav-title">{action.title}</p>
+            <p className="dashboard-nav-subtitle">{action.subtitle}</p>
+          </Link>
+        ))}
+      </div>
     </section>
   )
 }

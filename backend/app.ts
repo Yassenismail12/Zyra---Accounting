@@ -11,7 +11,7 @@ import ProductRouter from './Modules/Products/product.route';
 import InvoicesRouter from './Modules/Invoices/Invoices.route';
 const app = express();
 
-const port = process.env.PORT;
+const port = Number(process.env.PORT) || 5000;
 
 //init Router
 const authRouter = new AuthRouter()

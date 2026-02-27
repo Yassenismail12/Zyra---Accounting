@@ -1,25 +1,32 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocation, useNavigate, Navigate } from 'react-router-dom'
-import axios from 'axios'
 import { login } from '../api/auth'
+import { getApiErrorMessage } from '../api/errors'
 import { useAuth } from '../auth/AuthContext'
 import { BrandMark } from '../components/BrandMark'
-
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-type LoginFormValues = z.infer<typeof loginSchema>
+import { useI18n } from '../i18n'
+type LoginFormValues = {
+  email: string
+  password: string
+}
 
 export function LoginPage() {
+  const { t, toggleLang } = useI18n()
   const [apiError, setApiError] = useState<string | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated, setAuth } = useAuth()
+  const loginSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(t('pages.login.validation.email')),
+        password: z.string().min(6, t('pages.login.validation.password')),
+      }),
+    [t],
+  )
 
   const {
     register,
@@ -48,42 +55,38 @@ export function LoginPage() {
           ?.pathname || '/dashboard'
       navigate(redirectTo, { replace: true })
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (!error.response) {
-          setApiError('Cannot reach API. Make sure backend is running on port 3000.')
-          return
-        }
-
-        const message =
-          error.response.data?.message ||
-          error.response.data?.error?.message ||
-          'Login failed. Please try again.'
-        setApiError(message)
-        return
-      }
-      setApiError('Something went wrong. Please try again.')
+      setApiError(
+        getApiErrorMessage(
+          error,
+          t('pages.login.error.failed'),
+          t('pages.login.error.offline'),
+        ),
+      )
     }
   }
 
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <button type="button" className="btn btn-outline lang-switch auth-lang-switch" onClick={toggleLang}>
+          {t('common.language')}
+        </button>
         <BrandMark />
-        <h1>Login to ZYRA</h1>
-        <p className="auth-subtitle">Sign in to continue to your dashboard</p>
+        <h1>{t('pages.login.title')}</h1>
+        <p className="auth-subtitle">{t('pages.login.subtitle')}</p>
 
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">{t('pages.login.email')}</label>
         <input id="email" type="email" {...register('email')} />
         {errors.email && <p className="field-error">{errors.email.message}</p>}
 
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">{t('pages.login.password')}</label>
         <input id="password" type="password" {...register('password')} />
         {errors.password && <p className="field-error">{errors.password.message}</p>}
 
         {apiError && <p className="field-error">{apiError}</p>}
 
         <button type="submit" className="btn" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
+          {isSubmitting ? t('pages.login.signingIn') : t('pages.login.signIn')}
         </button>
       </form>
     </div>

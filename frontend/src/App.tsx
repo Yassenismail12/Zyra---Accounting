@@ -3,7 +3,10 @@ import { Layout } from './components/Layout'
 import { useAuth } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { DashboardPage } from './pages/Dashboard'
+import { InvoicesPage } from './pages/Invoices'
+import { InventoryPage } from './pages/Inventory'
 import { LoginPage } from './pages/Login'
+import { PartiesPage } from './pages/Parties'
 
 function HomeRedirect() {
   const { isAuthenticated } = useAuth()
@@ -18,6 +21,9 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/parties" element={<PartiesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<HomeRedirect />} />

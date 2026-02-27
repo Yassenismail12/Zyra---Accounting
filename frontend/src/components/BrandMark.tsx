@@ -1,3 +1,5 @@
+import logo from '../assets/img/zyra.png'
+
 interface BrandMarkProps {
   compact?: boolean
 }
@@ -5,11 +7,7 @@ interface BrandMarkProps {
 export function BrandMark({ compact = false }: BrandMarkProps) {
   return (
     <div className={`brand-block${compact ? ' brand-block-compact' : ''}`}>
-      <div className="logo-glyph" aria-hidden="true">
-        <span className="logo-stroke logo-stroke-top" />
-        <span className="logo-stroke logo-stroke-mid" />
-        <span className="logo-stroke logo-stroke-diag" />
-      </div>
+      <img className="brand-logo" src={logo} alt="Zyra logo" />
       <span className="brand-word">ZYRA</span>
     </div>
   )
