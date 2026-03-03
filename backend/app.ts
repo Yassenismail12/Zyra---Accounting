@@ -9,6 +9,8 @@ import UserRouter from './Modules/Users/user.route';
 import PartiesRouter from './Modules/Parties/parties.route';
 import ProductRouter from './Modules/Products/product.route';
 import InvoicesRouter from './Modules/Invoices/Invoices.route';
+import PaymentRouter from './Modules/Payment/payment.route';
+
 const app = express();
 
 const port = Number(process.env.PORT) || 5000;
@@ -19,6 +21,7 @@ const userRouter = new UserRouter()
 const partyRouter = new PartiesRouter()
 const productRouter = new ProductRouter()
 const invoiceRouter = new InvoicesRouter()
+const paymentRouter = new PaymentRouter()
 
 // Middlewares
 app.use(express.json());
@@ -33,6 +36,7 @@ app.use(userRouter.router)
 app.use(partyRouter.router)
 app.use(productRouter.route)
 app.use(invoiceRouter.route)
+app.use(paymentRouter.route)
 
 //Error handler
 app.use(errorHandler)

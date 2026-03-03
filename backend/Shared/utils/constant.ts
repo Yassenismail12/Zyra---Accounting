@@ -47,3 +47,10 @@ export const InvoicesError = {
 export const InvoicesSuccess = {
     CREATE_INVOICES_SUCCESS: 'Create Invoices Successful'
 }
+
+export const PaymentError = {
+    PAYMENT_NOT_FOUND : 'Payment not found for this Invoice',
+    INVOICE_OVERPAID: "Invoice has already been overpaid.",
+    INVOICE_PAID : "Invoice is already fully paid.",
+    PAY_MORE_REMAINING : "You cannot pay more than the remaining amount."
+}

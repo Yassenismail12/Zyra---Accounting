@@ -1,6 +1,6 @@
 import pool from "../../db";
 import { addInvoiceDTO } from "./dto/addInvoices.dto";
-import { InvoicesSuccess, InvoicesError } from "../../Shared/utils/constant";
+import { InvoicesSuccess, InvoicesError, ProductsError } from "../../Shared/utils/constant";
 import { AppError } from "../../Shared/errors/app.error";
 import { StatusCode } from "../../Shared/enums/statusCode.enum";
 import { Typeinvoice } from "../../Shared/enums/invoice.enum";
@@ -27,7 +27,7 @@ export class InvoicesService {
                 )
                 const product = result.rows[0]
                 if (!product)
-                    throw new AppError(InvoicesError.INVOICES_NOT_FOUND, StatusCode.NOT_FOUND)
+                    throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
                 subtotal += product.sale_price * item.qty
             }
             // calc the tax
