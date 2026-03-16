@@ -45,4 +45,39 @@ export class ProductController {
       data: product,
     })
   }
+
+  public getProductByIdWithBatch = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    const { product } = await this.productService.getProductByIdWithBatches(Number(id))
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      data: product,
+    })
+  }
+
+  public updateProduct = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    const dto=req.body
+    const {product} =await this.productService.updateProduct(Number(id),dto)
+
+    sendRespones(res,StatusCode.OK,{
+      success:true,
+      data:product
+    })
+  }
+
+  public deleteProduct = async (req:Request,res:Response)=>{
+    const {id}=req.params
+
+    const {message}=await this.productService.deleteProduct(Number(id))
+
+    
+    sendRespones(res,StatusCode.OK,{
+      success:true,
+      message
+    })
+  }
 }

@@ -1,7 +1,6 @@
 import { Request, Response , NextFunction } from "express"
 import { UserRoles } from "../enums/userRoles.enum"
 import jwt, { JwtPayload } from "jsonwebtoken"
-import pool from "../../db"
 import { AppError } from "../errors/app.error"
 import { AuthErrors, UserError } from "../utils/constant"
 import { StatusCode } from "../enums/statusCode.enum"

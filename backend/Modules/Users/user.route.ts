@@ -5,6 +5,7 @@ import { addUserSchema } from "./dto/addUser.dto"
 import expressAsyncHandler from "express-async-handler"
 import { auth, authRoles } from "../../Shared/middlewares/auth.middleware"
 import { UserRoles } from "../../Shared/enums/userRoles.enum"
+import { UpdateUserSchema } from "./dto/updateUser.dto"
 
 class UserRouter {
   router = Router()
@@ -37,6 +38,13 @@ class UserRouter {
       // authRoles(UserRoles.ADMIN),
       expressAsyncHandler(this.userController.getUserById),
     )
+
+    this.router.patch(
+      "users/:id",
+      validate(UpdateUserSchema),
+      expressAsyncHandler(this.userController.deleteUser),
+    )
+
   }
 }
 

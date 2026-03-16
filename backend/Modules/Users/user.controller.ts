@@ -38,4 +38,27 @@ export class UserController {
       data: data,
     })
   }
+
+  public updateUser = async(req:Request,res:Response)=>{
+    const {id} = req.params
+    const body = req.body
+    
+    const {user} =await this.userService.UpdateUser(body ,Number(id))
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      data: user,
+    })
+  }
+
+  public deleteUser= async(req:Request,res:Response)=>{
+    const {id} =req.params
+
+    const {message} = await this.userService.deleteUser(Number(id))
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      message
+    })
+  }
 }

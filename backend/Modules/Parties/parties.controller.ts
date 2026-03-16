@@ -44,4 +44,28 @@ export class PartiesController {
       data: party,
     })
   }
+
+  public updateParty= async (req:Request ,res:Response)=>{
+    const {id} = req.params
+
+    const body = req.body
+
+    const {party}= await this.partiesService.updateParty(Number(id),body)
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      data: party,
+    })
+  }
+
+  public deleteParty= async (req:Request,res:Response)=>{
+    const {id} =req.params
+
+    const {msg}=await this.partiesService.deleteParty(Number(id))
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      message:msg
+    })
+  }
 }

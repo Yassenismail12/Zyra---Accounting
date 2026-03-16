@@ -3,6 +3,7 @@ import { AppError } from "../../Shared/errors/app.error"
 import { StatusCode } from "../../Shared/enums/statusCode.enum"
 import { PartiesError, PartiesSuccess } from "../../Shared/utils/constant"
 import { prisma } from "../../prisma/prisma"
+import { updatePartyDTO } from "./dto/updateParties.dto"
 
 export class PartiesService {
   public async createPatries(dto: addPartyDTO) {
@@ -39,5 +40,32 @@ export class PartiesService {
     if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
 
     return { party: result }
+  }
+
+  public async updateParty(id:number ,dto:updatePartyDTO){
+    const result = await prisma.party.findUnique({
+      where: { id },
+    })
+    if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    const newParty= await prisma.party.update({
+      where:{id},
+      data: dto
+    })
+
+    return {party:newParty}
+  }
+
+  public async deleteParty(id:number){
+    const result = await prisma.party.findUnique({
+      where: { id },
+    })
+    if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    await prisma.party.delete({
+      where:{id}
+    })
+
+    return {msg:PartiesSuccess.DELETE_PARTY_SUCCESS}
   }
 }

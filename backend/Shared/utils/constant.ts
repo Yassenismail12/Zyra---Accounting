@@ -17,7 +17,8 @@ export const AuthErrors = {
 }
 
 export const UserSuccess = {
-    CREATE_USER_SUCCESS: 'Create User Successful'
+    CREATE_USER_SUCCESS: 'Create User Successful',
+    DELETE_USER_SUCCESS: 'Delete User Successful'
 }
 
 export const PartiesError = {
@@ -27,7 +28,8 @@ export const PartiesError = {
 }
 
 export const PartiesSuccess = {
-    CREATE_PARTIES_SUCCESS: 'Create Party Successful'
+    CREATE_PARTIES_SUCCESS: 'Create Party Successful',
+    DELETE_PARTY_SUCCESS: 'Delete Party Successful'
 }
 
 export const ProductsError = {
@@ -37,7 +39,8 @@ export const ProductsError = {
 }
 
 export const ProductsSuccess = {
-    CREATE_PRODUCTS_SUCCESS: 'Create Product Successful'
+    CREATE_PRODUCTS_SUCCESS: 'Create Product Successful',
+    DELETE_PRODUCT_SUCCESS: 'Delete Product Successful'
 }
 
 export const InvoicesError = {
@@ -53,4 +56,10 @@ export const PaymentError = {
     INVOICE_OVERPAID: "Invoice has already been overpaid.",
     INVOICE_PAID : "Invoice is already fully paid.",
     PAY_MORE_REMAINING : "You cannot pay more than the remaining amount."
+}
+
+
+export const BatchError={
+    BATCH_EXIT:"Batch already exists for this product",
+    EXPIRY_DATE:"Expiry date must be in the future"
 }

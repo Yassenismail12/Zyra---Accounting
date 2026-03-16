@@ -3,12 +3,13 @@ import { AppError } from "../../Shared/errors/app.error"
 import { ProductsError, ProductsSuccess } from "../../Shared/utils/constant"
 import { addProductDTO } from "./dto/addProduct.dto"
 import { prisma } from "../../prisma/prisma"
+import { updateProductDTO } from "./dto/updateProduct.dto"
 
 export class ProductService {
   public async createProduct(dto: addProductDTO) {
     const { name, sale_price, purchase_price } = dto
 
-    const result = await  prisma.product.findUnique({
+    const result = await prisma.product.findUnique({
       where: { name },
     })
 
@@ -41,5 +42,47 @@ export class ProductService {
     if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
 
     return { product }
+  }
+
+  public async getProductByIdWithBatches(id: number) {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include:{
+        batches:true
+      }
+    })
+
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    return { product }
+  }
+
+  public async updateProduct(id: number, dto: updateProductDTO) {
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    const nProduct = await prisma.product.update({
+      where: { id },
+      data: dto,
+    })
+
+    return { product: nProduct }
+  }
+
+  public async deleteProduct(id:number){
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    await prisma.product.delete({
+      where: { id },
+    })
+
+    return { message : ProductsSuccess.DELETE_PRODUCT_SUCCESS}
   }
 }
