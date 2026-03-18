@@ -1,34 +1,31 @@
-import { tuple } from "zod";
-import { StatusCode } from "../../Shared/enums/statusCode.enum";
-import { sendRespones } from "../../Shared/utils/sendResponse";
-import { PaymentService } from "./payment.service";
-import { Response ,Request } from "express";
+import { tuple } from "zod"
+import { StatusCode } from "../../Shared/enums/statusCode.enum"
+import { sendRespones } from "../../Shared/utils/sendResponse"
+import { PaymentService } from "../../generated/prisma/models/stock"
+import { Response, Request } from "express"
 
-export class PaymentController{
+export class PaymentController {
+  private paymentService: PaymentService
 
-    private paymentService : PaymentService
+  constructor() {
+    this.paymentService = new PaymentService()
+  }
 
-    constructor(){
-        this.paymentService = new PaymentService()
-    }
+  public createPayment = async (req: Request, res: Response) => {
+    const { InvoicesId } = req.params
 
-    public createPayment = async( req:Request , res:Response ) => {
-        
-        const {InvoicesId} = req.params
-        
-        const dto = req.body
-        
-        const pay = await this.paymentService.createPayment( Number(InvoicesId) , dto )
+    const dto = req.body
 
-        sendRespones(res,StatusCode.OK,{success:true , data:{ pay } })
-    }
+    const pay = await this.paymentService.createPayment(Number(InvoicesId), dto)
 
-    public  getPayment = async( req:Request , res:Response )=>{
+    sendRespones(res, StatusCode.OK, { success: true, data: { pay } })
+  }
 
-        const {InvoicesId} = req.params
+  public getPayment = async (req: Request, res: Response) => {
+    const { InvoicesId } = req.params
 
-        const payments = await this.paymentService.getPayment( Number(InvoicesId) )
+    const payments = await this.paymentService.getPayment(Number(InvoicesId))
 
-        sendRespones(res , StatusCode.OK , {success : true , data : { payments } })
-    }
+    sendRespones(res, StatusCode.OK, { success: true, data: { payments } })
+  }
 }

@@ -1,45 +1,71 @@
-import { addPartyDTO } from "./dto/addparties.dto";
-import pool from "../../db/index";
-import { AppError } from "../../Shared/errors/app.error";
-import { StatusCode } from "../../Shared/enums/statusCode.enum";
-import { PartiesError, PartiesSuccess } from "../../Shared/utils/constant";
+import { addPartyDTO } from "./dto/addparties.dto"
+import { AppError } from "../../Shared/errors/app.error"
+import { StatusCode } from "../../Shared/enums/statusCode.enum"
+import { PartiesError, PartiesSuccess } from "../../Shared/utils/constant"
+import { prisma } from "../../prisma/prisma"
+import { updatePartyDTO } from "./dto/updateParties.dto"
 
 export class PartiesService {
+  public async createPatries(dto: addPartyDTO) {
+    const { name, type, phone, address } = dto
 
-    public async createPatries(dto: addPartyDTO) {
+    const result = await prisma.party.findUnique({
+      where: { name },
+    })
 
-        const { name, type, phone, address } = dto
+    if (result) throw new AppError(PartiesError.PARTIES_ALREADY_EXSITS, StatusCode.CONFLICT)
 
-        const result = await pool.query(
-            `SELECT * FROM parties WHERE name = $1`,
-            [name]
-        );
+    await prisma.party.create({
+      data: {
+        name,
+        type,
+        phone,
+        address,
+      },
+    })
 
-        if (result.rows.length > 0)
-            throw new AppError(PartiesError.PARTIES_ALREADY_EXSITS, StatusCode.CONFLICT, result.rows)
+    return { message: PartiesSuccess.CREATE_PARTIES_SUCCESS }
+  }
 
-        await pool.query(
-            `INSERT INTO parties (name, type, phone ,address)
-            VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [name, type, phone, address]
-        );
+  public async getAllParties() {
+    const result = await prisma.party.findMany()
 
-        return { message: PartiesSuccess.CREATE_PARTIES_SUCCESS }
-    }
+    return { parties: result }
+  }
 
-    public async getAllParties() {
-        const result = await pool.query("select * from parties")
+  public async getPartyById(id: number) {
+    const result = await prisma.party.findUnique({
+      where: { id },
+    })
+    if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
 
-        return { parties: result.rows }
-    }
+    return { party: result }
+  }
 
-    public async getPartyById(id: number) {
-        const result = await pool.query("select * from parties where id = $1", [id])
-        const party = result.rows[0]
-        if (!party)
-            throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
+  public async updateParty(id:number ,dto:updatePartyDTO){
+    const result = await prisma.party.findUnique({
+      where: { id },
+    })
+    if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
 
-        return { party }
-    }
+    const newParty= await prisma.party.update({
+      where:{id},
+      data: dto
+    })
+
+    return {party:newParty}
+  }
+
+  public async deleteParty(id:number){
+    const result = await prisma.party.findUnique({
+      where: { id },
+    })
+    if (!result) throw new AppError(PartiesError.PARTIES_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    await prisma.party.delete({
+      where:{id}
+    })
+
+    return {msg:PartiesSuccess.DELETE_PARTY_SUCCESS}
+  }
 }

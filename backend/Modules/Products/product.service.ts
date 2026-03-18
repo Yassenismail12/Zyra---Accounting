@@ -1,49 +1,88 @@
-import pool from "../../db";
-import { StatusCode } from "../../Shared/enums/statusCode.enum";
-import { AppError } from "../../Shared/errors/app.error";
-import { ProductsError, ProductsSuccess } from "../../Shared/utils/constant";
-import { addProductDTO } from "./dto/addProduct.dto";
+import { StatusCode } from "../../Shared/enums/statusCode.enum"
+import { AppError } from "../../Shared/errors/app.error"
+import { ProductsError, ProductsSuccess } from "../../Shared/utils/constant"
+import { addProductDTO } from "./dto/addProduct.dto"
+import { prisma } from "../../prisma/prisma"
+import { updateProductDTO } from "./dto/updateProduct.dto"
 
 export class ProductService {
+  public async createProduct(dto: addProductDTO) {
+    const { name, sale_price, purchase_price } = dto
 
-    public async createProduct(dto: addProductDTO) {
+    const result = await prisma.product.findUnique({
+      where: { name },
+    })
 
-        const { name, sale_price, purchase_price, current_stock } = dto
+    if (result) throw new AppError(ProductsError.PRODUCTS_ALREADY_EXSITS, StatusCode.CONFLICT)
 
-        const result = await pool.query(
-            `SELECT * FROM products WHERE name = $1`,
-            [name]
-        );
+    await prisma.product.create({
+      data: {
+        name,
+        sale_price,
+        purchase_price,
+      },
+    })
 
-        if (result.rows.length > 0)
-            throw new AppError(ProductsError.PRODUCTS_ALREADY_EXSITS, StatusCode.CONFLICT, result.rows)
+    return { message: ProductsSuccess.CREATE_PRODUCTS_SUCCESS }
+  }
 
-        await pool.query(
-            `INSERT INTO products (name, sale_price, purchase_price, current_stock)
-            VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [name, sale_price, purchase_price, current_stock]
-        )
+  public async getAllProducts() {
+    const result = await prisma.product.findMany()
 
-        return { message: ProductsSuccess.CREATE_PRODUCTS_SUCCESS }
+    return { products: result }
+  }
 
-    }
+  public async getProductById(id: number) {
+    const result = await prisma.product.findUnique({
+      where: { id },
+    })
 
-    public async getAllProducts() {
-        const result = await pool.query("select * from products ")
+    const product = result
 
-        return { products: result.rows }
-    }
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
 
-    public async getProductById(id: number) {
+    return { product }
+  }
 
-        const result = await pool.query("select * from products where id = $1", [id])
+  public async getProductByIdWithBatches(id: number) {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include:{
+        batches:true
+      }
+    })
 
-        const product = result.rows[0];
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
 
-        if (!product)
-            throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+    return { product }
+  }
 
-        return { product }
-    }
-} 
+  public async updateProduct(id: number, dto: updateProductDTO) {
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    const nProduct = await prisma.product.update({
+      where: { id },
+      data: dto,
+    })
+
+    return { product: nProduct }
+  }
+
+  public async deleteProduct(id:number){
+    const product = await prisma.product.findUnique({
+      where: { id },
+    })
+
+    if (!product) throw new AppError(ProductsError.PRODUCT_NOT_FOUND, StatusCode.NOT_FOUND)
+
+    await prisma.product.delete({
+      where: { id },
+    })
+
+    return { message : ProductsSuccess.DELETE_PRODUCT_SUCCESS}
+  }
+}
