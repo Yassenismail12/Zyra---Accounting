@@ -1,8 +1,7 @@
-import { tuple } from "zod"
 import { StatusCode } from "../../Shared/enums/statusCode.enum"
 import { sendRespones } from "../../Shared/utils/sendResponse"
-import { PaymentService } from "../../generated/prisma/models/stock"
 import { Response, Request } from "express"
+import { PaymentService } from "./payment.service"
 
 export class PaymentController {
   private paymentService: PaymentService

@@ -21,9 +21,15 @@ class ProductRouter {
       expressAsyncHandler(this.productController.createProduct),
     )
 
-    this.route.get("/products", expressAsyncHandler(this.productController.getAllProducts))
+    this.route.get(
+      "/products",
+      expressAsyncHandler(this.productController.getAllProducts)
+    )
 
-    this.route.get("/product/:id", expressAsyncHandler(this.productController.getProductById))
+    this.route.get(
+      "/product/:id",
+      expressAsyncHandler(this.productController.getProductById)
+    )
 
     this.route.get(
       "/product/batch/:id",
@@ -31,12 +37,15 @@ class ProductRouter {
     )
 
     this.route.patch(
-      "product/:id",
+      "/product/:id",
       validate(updateProductSchema),
       expressAsyncHandler(this.productController.updateProduct),
     )
 
-    this.route.delete("product/:id", expressAsyncHandler(this.productController.deleteProduct))
+    this.route.delete(
+      "/product/:id",
+      expressAsyncHandler(this.productController.deleteProduct)
+    )
   }
 }
 

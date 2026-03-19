@@ -23,7 +23,8 @@ export class BatchService {
 
     if (batchExists) throw new AppError(BatchError.BATCH_EXIT, StatusCode.BAD_REQUEST)
 
-    if (expiry_date <= new Date()) {
+    const parsedExpiryDate = new Date(expiry_date)
+    if (parsedExpiryDate <= new Date()) {
       throw new AppError(BatchError.EXPIRY_DATE, StatusCode.BAD_REQUEST)
     }
 
@@ -31,7 +32,7 @@ export class BatchService {
       data: {
         product_id,
         batch_number,
-        expiry_date,
+        expiry_date: parsedExpiryDate,
       },
     })
 

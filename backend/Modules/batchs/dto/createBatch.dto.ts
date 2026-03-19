@@ -4,7 +4,7 @@ export const createBatchSchema = z.object({
   body: z.object({
     product_id: z.number(),
     batch_number: z.string(),
-    expiry_date:z.date()
+    expiry_date: z.coerce.date()
   }),
 })
 

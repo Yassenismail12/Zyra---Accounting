@@ -15,13 +15,19 @@ class BatchRouter {
 
   private initRouter() {
     this.route.post(
-      "batches",
+      "/batches",
       validate(createBatchSchema),
       expressAsyncHandler(this.batchController.createBatch),
     )
 
-    this.route.get("batches", expressAsyncHandler(this.batchController.getAllBatch))
-    this.route.get("batches/:id", expressAsyncHandler(this.batchController.getAllBatchById))
+    this.route.get(
+      "/batches",
+      expressAsyncHandler(this.batchController.getAllBatch)
+    )
+    this.route.get(
+      "/batches/:id",
+      expressAsyncHandler(this.batchController.getAllBatchById)
+    )
   }
 }
 

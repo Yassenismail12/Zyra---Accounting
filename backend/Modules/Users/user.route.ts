@@ -40,8 +40,13 @@ class UserRouter {
     )
 
     this.router.patch(
-      "users/:id",
+      "/users/:id",
       validate(UpdateUserSchema),
+      expressAsyncHandler(this.userController.updateUser),
+    )
+
+    this.router.delete(
+      "/users/:id",
       expressAsyncHandler(this.userController.deleteUser),
     )
 

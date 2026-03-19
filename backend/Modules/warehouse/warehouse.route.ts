@@ -15,13 +15,18 @@ class WarehouseRouter {
 
   private initRouter() {
     this.route.post(
-      "warehouse",
+      "/warehouse",
       validate(addWarehouseSchema),
       expressAsyncHandler(this.warehouseController.createWarehouse),
     )
 
-    this.route.get('warehouse',expressAsyncHandler(this.warehouseController.getAllWarehouse))
-    this.route.get('warehouse/:id',expressAsyncHandler(this.warehouseController.getWarehouseById))
+    this.route.get('/warehouse',
+      expressAsyncHandler(this.warehouseController.getAllWarehouse)
+    )
+
+    this.route.get('/warehouse/:id',
+      expressAsyncHandler(this.warehouseController.getWarehouseById)
+    )
   }
 }
 
