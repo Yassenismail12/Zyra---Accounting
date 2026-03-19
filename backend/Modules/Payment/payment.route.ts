@@ -7,7 +7,7 @@ import { createPaymentSchema } from "./dto/createPayment.dto";
 
 class PaymentRouter{
     private paymentController:PaymentController
-    route = Router()
+    router = Router()
 
     constructor(){
         this.paymentController = new PaymentController()
@@ -16,13 +16,13 @@ class PaymentRouter{
 
     private initRouter(){
 
-        this.route.post(
+        this.router.post(
             '/payment/:InvoicesId',
             validate(createPaymentSchema) , 
             expressAsyncHandler(this.paymentController.createPayment)
         )
 
-        this.route.get(
+        this.router.get(
             '/payment/:InvoicesId',
             expressAsyncHandler(this.paymentController.getPayment)
         )

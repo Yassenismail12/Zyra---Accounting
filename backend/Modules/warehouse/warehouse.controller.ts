@@ -40,4 +40,15 @@ export class WarehouseController {
       data: warehouses,
     })
   }
+
+  public getWarehouseByIdWithStock = async (req: Request, res: Response) => {
+    const {id}=req.params
+
+    const warehouses = await this.warehouseService.getWarehouseByIdWithStock(Number(id))
+
+    sendRespones(res, StatusCode.OK, {
+      success: true,
+      data: warehouses,
+    })
+  }
 }

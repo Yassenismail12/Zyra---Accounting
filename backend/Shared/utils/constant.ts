@@ -58,8 +58,17 @@ export const PaymentError = {
     PAY_MORE_REMAINING : "You cannot pay more than the remaining amount."
 }
 
-
 export const BatchError={
     BATCH_EXIT:"Batch already exists for this product",
     EXPIRY_DATE:"Expiry date must be in the future"
+}
+
+export const StockError={
+    STOCK_ALREADY_EXSITS:"Stock already exists for this product",
+    STOCK_NOT_FOUND:"Stock not found",
+}
+
+export const StockSuccess={
+    CREATE_STOCK_SUCCESS:"Create Stock Successful",
+    DELETE_STOCK_SUCCESS:"Delete Stock Successful"
 }

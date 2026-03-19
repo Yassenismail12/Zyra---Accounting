@@ -6,7 +6,7 @@ import expressAsyncHandler from "express-async-handler"
 import { updateProductSchema } from "./dto/updateProduct.dto"
 
 class ProductRouter {
-  route = Router()
+  router = Router()
   private productController: ProductController
 
   constructor() {
@@ -15,34 +15,34 @@ class ProductRouter {
   }
 
   private initRouter() {
-    this.route.post(
+    this.router.post(
       "/products",
       validate(addProductSchema),
       expressAsyncHandler(this.productController.createProduct),
     )
 
-    this.route.get(
+    this.router.get(
       "/products",
       expressAsyncHandler(this.productController.getAllProducts)
     )
 
-    this.route.get(
+    this.router.get(
       "/product/:id",
       expressAsyncHandler(this.productController.getProductById)
     )
 
-    this.route.get(
+    this.router.get(
       "/product/batch/:id",
       expressAsyncHandler(this.productController.getProductByIdWithBatch),
     )
 
-    this.route.patch(
+    this.router.patch(
       "/product/:id",
       validate(updateProductSchema),
       expressAsyncHandler(this.productController.updateProduct),
     )
 
-    this.route.delete(
+    this.router.delete(
       "/product/:id",
       expressAsyncHandler(this.productController.deleteProduct)
     )

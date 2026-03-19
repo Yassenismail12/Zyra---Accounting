@@ -5,7 +5,7 @@ import { createBatchSchema } from "./dto/createBatch.dto"
 import expressAsyncHandler from "express-async-handler"
 
 class BatchRouter {
-  route = Router()
+  router = Router()
   private batchController: BatchController
 
   constructor() {
@@ -14,17 +14,17 @@ class BatchRouter {
   }
 
   private initRouter() {
-    this.route.post(
+    this.router.post(
       "/batches",
       validate(createBatchSchema),
       expressAsyncHandler(this.batchController.createBatch),
     )
 
-    this.route.get(
+    this.router.get(
       "/batches",
       expressAsyncHandler(this.batchController.getAllBatch)
     )
-    this.route.get(
+    this.router.get(
       "/batches/:id",
       expressAsyncHandler(this.batchController.getAllBatchById)
     )

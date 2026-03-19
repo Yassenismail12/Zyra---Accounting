@@ -5,7 +5,7 @@ import { StatusCode } from "../../Shared/enums/statusCode.enum"
 import bcrypt from "bcrypt"
 import { prisma } from "../../prisma/prisma"
 import { UpdateUserDTO } from "./dto/updateUser.dto"
-import { tr } from "zod/v4/locales"
+
 export class UserService {
   public async createUser(dto: addUserDTO) {
     const { name, email, password, role } = dto

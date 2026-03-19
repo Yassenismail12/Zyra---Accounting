@@ -5,7 +5,7 @@ import { addInvoiceSchema } from "./dto/addInvoices.dto"
 import expressAsyncHandler from "express-async-handler"
 
 class InvoicesRouter {
-  route = Router()
+  router = Router()
   private invoicesController: InvoicesController
 
   constructor() {
@@ -14,15 +14,15 @@ class InvoicesRouter {
   }
 
   private initRouter() {
-    this.route.post(
+    this.router.post(
       "/invoices",
       validate(addInvoiceSchema),
       expressAsyncHandler(this.invoicesController.createInvoice),
     )
 
-    this.route.get("/invoices", expressAsyncHandler(this.invoicesController.getAllInvoices))
+    this.router.get("/invoices", expressAsyncHandler(this.invoicesController.getAllInvoices))
 
-    this.route.get("/invoices/:id", expressAsyncHandler(this.invoicesController.getInvoiceById))
+    this.router.get("/invoices/:id", expressAsyncHandler(this.invoicesController.getInvoiceById))
   }
 }
 

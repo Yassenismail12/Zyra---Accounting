@@ -5,7 +5,7 @@ import { addWarehouseSchema } from "./dto/addWarehouse.dto"
 import expressAsyncHandler from "express-async-handler"
 
 class WarehouseRouter {
-  route = Router()
+  router = Router()
   private warehouseController: WarehouseController
 
   constructor() {
@@ -14,18 +14,22 @@ class WarehouseRouter {
   }
 
   private initRouter() {
-    this.route.post(
+    this.router.post(
       "/warehouse",
       validate(addWarehouseSchema),
       expressAsyncHandler(this.warehouseController.createWarehouse),
     )
 
-    this.route.get('/warehouse',
+    this.router.get('/warehouse',
       expressAsyncHandler(this.warehouseController.getAllWarehouse)
     )
 
-    this.route.get('/warehouse/:id',
+    this.router.get('/warehouse/:id',
       expressAsyncHandler(this.warehouseController.getWarehouseById)
+    )
+
+    this.router.get('/warehouse/:id/stock',
+      expressAsyncHandler(this.warehouseController.getWarehouseByIdWithStock)
     )
   }
 }

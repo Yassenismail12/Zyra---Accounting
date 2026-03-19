@@ -25,4 +25,19 @@ export class WarehouseService {
 
     return { warehouse }
   }
+
+  public async getWarehouseByIdWithStock(id: number) {
+    const warehouse = await prisma.warehouse.findUnique({
+      where: { id },
+      include: {
+        stock: {
+          include: {
+            batch: true
+          },
+        },
+      },
+    })
+
+    return { warehouse }
+  }
 }
