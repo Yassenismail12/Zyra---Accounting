@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD.svg"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum partyType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum invoiceType {
+  SALE
+  PURCHASE
+  RETURN
+}
+
+enum invoiceStatus {
+  PAID
+  UNPAID
+}
+
+enum movementType {
+  SALE
+  PURCHASE
+  TRANSFER
+  ADJUSTMENT
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String?
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  invoices  invoice[]
+}
+
+model party {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  type     partyType @default(CUSTOMER)
+  phone    String?
+  address  String?
+  invoices invoice[]
+}
+
+model product {
+  id             Int     @id @default(autoincrement())
+  name           String  @unique
+  sale_price     Decimal
+  purchase_price Decimal
+  batches        batch[]
+}
+
+model batch {
+  id           Int      @id @default(autoincrement())
+  product_id   Int
+  batch_number String
+  product      product  @relation(fields: [product_id], references: [id])
+  expiry_date  DateTime
+  stock        stock[]
+
+  @@unique([product_id, batch_number])
+}
+
+model warehouse {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  stock stock[]
+}
+
+model stock {
+  id             Int              @id @default(autoincrement())
+  warehouse_id   Int
+  warehouse      warehouse        @relation(fields: [warehouse_id], references: [id])
+  batch_id       Int
+  batch          batch            @relation(fields: [batch_id], references: [id])
+  quantity       Int              @default(0)
+  stockMovements stock_movement[]
+  invoiceItems   invoice_items[]
+
+  @@unique([warehouse_id, batch_id])
+}
+
+model invoice {
+  id            Int             @id @default(autoincrement())
+  type          invoiceType
+  invoice_date  DateTime
+  status        invoiceStatus
+  notes         String?
+  party_id      Int
+  party         party           @relation(fields: [party_id], references: [id])
+  created_by    Int
+  user          User            @relation(fields: [created_by], references: [id])
+  subtotal      Decimal
+  tax           Decimal
+  total         Decimal
+  created_at    DateTime        @default(now())
+  payments      payment[]
+  invoice_items invoice_items[]
+}
+
+model invoice_items {
+  id         Int     @id @default(autoincrement())
+  invoice_id Int
+  invoice    invoice @relation(fields: [invoice_id], references: [id])
+  stock_id   Int
+  stock      stock   @relation(fields: [stock_id], references: [id])
+  qty        Int
+  line_total Decimal
+}
+
+model payment {
+  id           Int      @id @default(autoincrement())
+  invoice_id   Int
+  invoice      invoice  @relation(fields: [invoice_id], references: [id])
+  amount       Decimal
+  payment_date DateTime
+}
+
+model stock_movement {
+  id            Int          @id @default(autoincrement())
+  stock_id      Int
+  stock         stock        @relation(fields: [stock_id], references: [id])
+  qty           Int
+  movement_type movementType
+  movement_date DateTime     @default(now())
+}
