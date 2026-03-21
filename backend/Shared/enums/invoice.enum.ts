@@ -2,7 +2,7 @@
 export enum Typeinvoice {
     SALE = 'SALE',
     PURCHASE = 'PURCHASE',
-    INTERNAL = 'INTERNAL'
+    RETURN = 'RETURN'
 }
 
 export enum invoice_status {

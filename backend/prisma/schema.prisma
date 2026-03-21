@@ -74,32 +74,31 @@ model product {
 }
 
 model batch {
-  id             Int              @id @default(autoincrement())
-  product_id     Int
-  batch_number   String
-  product        product          @relation(fields: [product_id], references: [id])
-  expiry_date    DateTime
-  invoice_items  invoice_items[]
-  stock          stock[]
-  stockMovements stock_movement[]
+  id           Int      @id @default(autoincrement())
+  product_id   Int
+  batch_number String
+  product      product  @relation(fields: [product_id], references: [id])
+  expiry_date  DateTime
+  stock        stock[]
 
   @@unique([product_id, batch_number])
 }
 
 model warehouse {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  stock          stock[]
-  stockMovements stock_movement[]
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  stock stock[]
 }
 
 model stock {
-  id           Int       @id @default(autoincrement())
-  warehouse_id Int
-  warehouse    warehouse @relation(fields: [warehouse_id], references: [id])
-  batch_id     Int
-  batch        batch     @relation(fields: [batch_id], references: [id])
-  quantity     Int       @default(0)
+  id             Int              @id @default(autoincrement())
+  warehouse_id   Int
+  warehouse      warehouse        @relation(fields: [warehouse_id], references: [id])
+  batch_id       Int
+  batch          batch            @relation(fields: [batch_id], references: [id])
+  quantity       Int              @default(0)
+  stockMovements stock_movement[]
+  invoiceItems   invoice_items[]
 
   @@unique([warehouse_id, batch_id])
 }
@@ -126,8 +125,8 @@ model invoice_items {
   id         Int     @id @default(autoincrement())
   invoice_id Int
   invoice    invoice @relation(fields: [invoice_id], references: [id])
-  batch_id   Int
-  batch      batch   @relation(fields: [batch_id], references: [id])
+  stock_id   Int
+  stock      stock   @relation(fields: [stock_id], references: [id])
   qty        Int
   line_total Decimal
 }
@@ -142,10 +141,8 @@ model payment {
 
 model stock_movement {
   id            Int          @id @default(autoincrement())
-  batch_id      Int
-  batch         batch        @relation(fields: [batch_id], references: [id])
-  warehouse_id  Int
-  warehouse     warehouse    @relation(fields: [warehouse_id], references: [id])
+  stock_id      Int
+  stock         stock        @relation(fields: [stock_id], references: [id])
   qty           Int
   movement_type movementType
   movement_date DateTime     @default(now())
